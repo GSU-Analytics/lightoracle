@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lightoracle"
+version = "0.2.0"
+description = "A lightweight Oracle database connection handler."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Isaac Kerson", email = "ikerson@gsu.edu"}
+]
+keywords = ["oracle", "database", "connection", "pandas"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas",
+    "keyring",
+    "oracledb==2.2.1",
+    "python-dotenv"
+]
+
+[project.urls]
+Homepage = "https://github.com/GSU-Analytics/lightoracle"
+Repository = "https://github.com/GSU-Analytics/lightoracle.git"
+
+[tool.setuptools]
+packages = ["lightoracle"]

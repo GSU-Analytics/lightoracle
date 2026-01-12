@@ -44,17 +44,34 @@ Notes:
       installed and accessible on your system, as they are required by the `oracledb` library.
 """
 
+import os
 import keyring
 import warnings
 import oracledb
 import pandas as pd
 from getpass import getpass
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class LightOracleConnection:
-    def __init__(self, user, dsn, lib_dir=None):
-        self.user = user
-        self.dsn = dsn
-        self.lib_dir = lib_dir
+    def __init__(self, user=None, dsn=None, lib_dir=None):
+        # Load from environment variables if not provided
+        self.user = user or os.getenv('ORACLE_USER')
+        self.dsn = dsn or os.getenv('ORACLE_DSN')
+        self.lib_dir = lib_dir or os.getenv('ORACLE_LIB_DIR')
+
+        # Validate required parameters
+        if not self.user:
+            raise ValueError(
+                "Oracle user is required. Provide it as an argument or set ORACLE_USER environment variable."
+            )
+        if not self.dsn:
+            raise ValueError(
+                "Oracle DSN is required. Provide it as an argument or set ORACLE_DSN environment variable."
+            )
+
         self.connection = None
         self.initialize_oracle_client()
 
@@ -66,7 +83,13 @@ class LightOracleConnection:
             oracledb.init_oracle_client()
 
     def get_password(self):
-        # Retrieve the password from the keyring
+        # Priority: 1. Environment variable, 2. Keyring, 3. Prompt
+        # Check for password in environment variable first
+        password = os.getenv('ORACLE_PASSWORD')
+        if password:
+            return password
+
+        # Fall back to keyring
         password = keyring.get_password('LightOracleConnection', self.user)
         if password is None:
             # If not found, prompt the user to enter the password

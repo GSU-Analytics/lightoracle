@@ -2,12 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name='lightoracle',
-    version='0.1.3',
+    version='0.2.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
         'keyring',
-        'oracledb==2.2.1'
+        'oracledb==2.2.1',
+        'python-dotenv'
     ],
     author='Isaac Kerson',
     author_email='ikerson@gsu.edu',

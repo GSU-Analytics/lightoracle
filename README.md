@@ -1,7 +1,7 @@
 # Light Oracle Connection
 
 ## Description
-A lightweight Oracle database connection handler for managing secure database interactions.
+A lightweight Oracle database connection handler for managing secure database interactions with support for environment variables and .env files.
 
 ## Installation Instructions
 
@@ -35,12 +35,37 @@ for users who only need to use the package without contributing to its developme
 
 2. **Install the Package in Existing Environment**:
    ```cmd
-   pip install git+https://github.com/GSU-Analytics/light_conn.git
+   pip install git+https://github.com/GSU-Analytics/lightoracle.git
    ```
-3. **Update the Package in Existing Environment**:
+
+3. **Install a Specific Version**:
    ```cmd
-   pip install git+https://github.com/GSU-Analytics/light_conn.git -U
+   pip install git+https://github.com/GSU-Analytics/lightoracle.git@v0.2.0
    ```
+
+4. **Update the Package in Existing Environment**:
+   ```cmd
+   pip install git+https://github.com/GSU-Analytics/lightoracle.git -U
+   ```
+
+5. **Install with UV**:
+   ```cmd
+   uv pip install git+https://github.com/GSU-Analytics/lightoracle.git
+   ```
+
+   Or for a specific version:
+   ```cmd
+   uv pip install git+https://github.com/GSU-Analytics/lightoracle.git@v0.2.0
+   ```
+
+### Version Information
+
+You can check the installed version:
+
+```python
+from lightoracle import __version__
+print(__version__)  # e.g., "0.2.0"
+```
 
 ### Local Installation
 
@@ -67,9 +92,62 @@ For local installation, particularly useful if you plan to contribute to the pac
    pip install .
    ```
 
+## Configuration
+
+LightOracle supports two methods for configuring database credentials:
+
+### Option 1: Environment Variables (.env file) - Recommended
+
+Create a `.env` file in your project root:
+
+```env
+ORACLE_USER=your_username
+ORACLE_DSN=your_dsn_here
+ORACLE_LIB_DIR=/path/to/oracle/instant/client
+ORACLE_PASSWORD=your_password_optional
+```
+
+Then use LightOracleConnection without arguments:
+
+```python
+from lightoracle import LightOracleConnection
+
+# Credentials loaded automatically from .env
+conn = LightOracleConnection()
+conn.test_connection()
+```
+
+**Notes:**
+- `ORACLE_PASSWORD` is optional. If not provided, the package will use keyring (see below) or prompt for password.
+- Never commit your `.env` file to version control.
+- This method is backward compatible - you can still pass explicit arguments if needed.
+
+### Option 2: Explicit Arguments (Traditional)
+
+Pass credentials directly when creating the connection:
+
+```python
+from lightoracle import LightOracleConnection
+
+conn = LightOracleConnection(
+    user="your_username",
+    dsn="your_dsn",
+    lib_dir="/path/to/oracle/instant/client"
+)
+conn.test_connection()
+```
+
+### Password Management
+
+LightOracle uses a three-tier approach for password management:
+
+1. **Environment Variable** (highest priority): Set `ORACLE_PASSWORD` in your .env file
+2. **Keyring**: Password stored securely in your system's keyring service
+3. **Interactive Prompt**: You'll be prompted to enter the password, which is then stored in keyring
+
 ## Usage
 
-To establish a connection to an Oracle database using the `LightOracleConnection` class, configure your connection parameters in the `config_example.py` file. After configuring the `config_example.py` file, rename the file to `config.py` and you can use these parameters to establish a connection to your Oracle database.Here's a guide on how to do that and then utilize the configuration to connect to your Oracle database.
+To establish a connection to an Oracle database using the `LightOracleConnection` class, you can use either the .env configuration method (recommended) or the traditional config.py approach.
 
 ### Configuring Connection Parameters
 

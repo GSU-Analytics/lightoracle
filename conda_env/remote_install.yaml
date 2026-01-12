@@ -5,7 +5,7 @@
 # After creating the environment, activate it with:
 # conda activate lightoracle
 
-name: lightoracle
+name: launchd-example
 channels:
   - defaults
 dependencies:

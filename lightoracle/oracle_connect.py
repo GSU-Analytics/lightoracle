@@ -40,8 +40,8 @@ Notes:
       enhancing security.
     - The `LightOracleConnection` class provides a method to reset the stored password, which
       can be useful if the database password changes.
-    - Before using this module, ensure that the Oracle Instant Client libraries are correctly
-      installed and accessible on your system, as they are required by the `oracledb` library.
+    - By default, thin mode is used and no Oracle Instant Client is required. Pass
+      `thick_mode=True` or set `lib_dir` to activate thick mode with the Oracle Client libraries.
 """
 
 import os
@@ -56,11 +56,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class LightOracleConnection:
-    def __init__(self, user=None, dsn=None, lib_dir=None):
+    def __init__(self, user=None, dsn=None, lib_dir=None, thick_mode=False):
         # Load from environment variables if not provided
         self.user = user or os.getenv('ORACLE_USER')
         self.dsn = dsn or os.getenv('ORACLE_DSN')
         self.lib_dir = lib_dir or os.getenv('ORACLE_LIB_DIR')
+        self.thick_mode = thick_mode or bool(self.lib_dir)
 
         # Validate required parameters
         if not self.user:
@@ -76,11 +77,8 @@ class LightOracleConnection:
         self.initialize_oracle_client()
 
     def initialize_oracle_client(self):
-        # Initialize the Oracle Client with the provided library directory, if specified
-        if self.lib_dir:
-            oracledb.init_oracle_client(lib_dir=self.lib_dir)
-        else:
-            oracledb.init_oracle_client()
+        if self.thick_mode:
+            oracledb.init_oracle_client(lib_dir=self.lib_dir or None)
 
     def get_password(self):
         # Priority: 1. Environment variable, 2. Keyring, 3. Prompt
@@ -127,10 +125,6 @@ class LightOracleConnection:
         if self.connection is None:
             self.connect()
 
-        # Temporarily suppress the specific Pandas warning
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             return pd.read_sql(query, con=self.connection)
-        
-        # Execute the query and return a DataFrame
-        return pd.read_sql(query, con=self.connection)

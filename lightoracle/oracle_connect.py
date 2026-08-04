@@ -40,8 +40,8 @@ Notes:
       enhancing security.
     - The `LightOracleConnection` class provides a method to reset the stored password, which
       can be useful if the database password changes.
-    - Before using this module, ensure that the Oracle Instant Client libraries are correctly
-      installed and accessible on your system, as they are required by the `oracledb` library.
+    - By default, thin mode is used and no Oracle Instant Client is required. Pass
+      `thick_mode=True` or set `lib_dir` to activate thick mode with the Oracle Client libraries.
 """
 
 import os
@@ -119,10 +119,6 @@ class LightOracleConnection:
         if self.connection is None:
             self.connect()
 
-        # Temporarily suppress the specific Pandas warning
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             return pd.read_sql(query, con=self.connection)
-        
-        # Execute the query and return a DataFrame
-        return pd.read_sql(query, con=self.connection)

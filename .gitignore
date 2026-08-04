@@ -226,3 +226,5 @@ config.py
 .vscode/
 .env
 **.csv
+CLAUDE.md
+.claude/

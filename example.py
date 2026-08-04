@@ -1,7 +1,6 @@
 # example.py
 
 from lightoracle import LightOracleConnection
-from config import oracle_user, lib_dir, oracle_dsn
 
 query = """
 SELECT
@@ -17,7 +16,7 @@ AND s.major = 'PHY'
 FETCH FIRST 20 ROWS ONLY
 """
 
-oracle_conn = LightOracleConnection(oracle_user, oracle_dsn, lib_dir)
+oracle_conn = LightOracleConnection()
 print("Connecting to Oracle database...")
 df = oracle_conn.execute_query(query)
 print("Query executed successfully.")

@@ -225,3 +225,4 @@ __pycache__/
 config.py
 .vscode/
 .env
+**.csv

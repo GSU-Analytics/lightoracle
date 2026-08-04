@@ -50,59 +50,51 @@ import warnings
 import oracledb
 import pandas as pd
 from getpass import getpass
+from omegaconf import OmegaConf
+from lightoracle import credentials
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
+
 class LightOracleConnection:
     def __init__(self, user=None, dsn=None, lib_dir=None):
-        # Load from environment variables if not provided
-        self.user = user or os.getenv('ORACLE_USER')
-        self.dsn = dsn or os.getenv('ORACLE_DSN')
-        self.lib_dir = lib_dir or os.getenv('ORACLE_LIB_DIR')
-
-        # Validate required parameters
-        if not self.user:
-            raise ValueError(
-                "Oracle user is required. Provide it as an argument or set ORACLE_USER environment variable."
-            )
-        if not self.dsn:
-            raise ValueError(
-                "Oracle DSN is required. Provide it as an argument or set ORACLE_DSN environment variable."
-            )
-
+        self.config = credentials.load_config(user=user, dsn=dsn, lib_dir=lib_dir)
         self.connection = None
         self.initialize_oracle_client()
 
+    def with_profile(self, profile: str, **kwargs):
+        self.config = credentials.load_config(profile=profile, **kwargs)
+
     def initialize_oracle_client(self):
         # Initialize the Oracle Client with the provided library directory, if specified
-        if self.lib_dir:
-            oracledb.init_oracle_client(lib_dir=self.lib_dir)
+        if self.config.lib_dir:
+            oracledb.init_oracle_client(lib_dir=self.config.lib_dir)
         else:
             oracledb.init_oracle_client()
 
     def get_password(self):
         # Priority: 1. Environment variable, 2. Keyring, 3. Prompt
         # Check for password in environment variable first
-        password = os.getenv('ORACLE_PASSWORD')
-        if password:
-            return password
+        env_password = os.getenv('ORACLE_PASSWORD')
+        if env_password:
+            return env_password
 
         # Fall back to keyring
-        password = keyring.get_password('LightOracleConnection', self.user)
+        password = keyring.get_password('LightOracleConnection', self.config.user)
         if password is None:
             # If not found, prompt the user to enter the password
-            password = getpass(prompt = f"Enter the password for {self.user}: ")
+            password = getpass(prompt = f"Enter the password for {self.config.user}: ")
             # Store the password in the keyring
-            keyring.set_password('LightOracleConnection', self.user, password)
+            keyring.set_password('LightOracleConnection', self.config.user, password)
         return password
 
     def reset_password(self):
         # Prompt the user to enter a new password
-        new_password = getpass(prompt = f"Enter the password for {self.user}: ")
+        new_password = getpass(prompt = f"Enter the password for {self.config.user}: ")
         # Store the new password in the keyring
-        keyring.set_password('LightOracleConnection', self.user, new_password)
+        keyring.set_password('LightOracleConnection', self.config.user, new_password)
         print("Password has been reset successfully.")
 
     def connect(self):
@@ -110,7 +102,7 @@ class LightOracleConnection:
         password = self.get_password()
         
         # Connect to the database
-        self.connection = oracledb.connect(user=self.user, password=password, dsn=self.dsn)
+        self.connection = oracledb.connect(user=self.config.user, password=password, dsn=self.config.dsn)
         
     def test_connection(self):
         if self.connection is None:

@@ -25,7 +25,8 @@ dependencies = [
     "pandas",
     "keyring",
     "oracledb==2.2.1",
-    "python-dotenv"
+    "python-dotenv",
+    "omegaconf>=2.3.0",
 ]
 
 [project.urls]
@@ -34,3 +35,6 @@ Repository = "https://github.com/GSU-Analytics/lightoracle.git"
 
 [tool.setuptools]
 packages = ["lightoracle"]
+
+[tool.ruff.lint]
+ignore = ['I001', 'UP045']

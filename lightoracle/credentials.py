@@ -27,8 +27,19 @@ class LightOracleConfig:
 def find_config_file() -> None | Path:
     configs = {
         'local_config': Path('.') / 'oracle_config.yaml',
-        'home_config': Path.home() / '.lightoracle/oracle_config.yaml'
+        'home_config': Path.home() / '.lightoracle.d/oracle_config.yaml'
     }
+    # Check for a `.lightoracle` env file in the home dir.
+    # If it exists, read the 'ORACLE_CONFIG_PATH' environment
+    # variable and add it as a path.
+    lightoracle_env = Path.home() / '.lightoracle'
+    if lightoracle_env.exists():
+        import os
+        load_dotenv(lightoracle_env)
+        config_path = os.getenv('ORACLE_CONFIG_PATH')
+        if config_path:
+            configs['home_custom_config'] = Path().home() / config_path
+
     for config, config_path in configs.items():
         if config_path.exists():
             return config_path

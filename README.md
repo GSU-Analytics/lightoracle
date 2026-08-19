@@ -1,6 +1,6 @@
 # lightoracle
 
-A lightweight Oracle database connection handler. Reads credentials from a `.env` file and returns query results as a pandas DataFrame.
+A lightweight Oracle database connection handler. Reads credentials automatically, and can execute queries with Pandas or produce a SQLAlchemy engine so you can use your tool of choice.
 
 ## Installation
 

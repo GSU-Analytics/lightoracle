@@ -92,6 +92,40 @@ Some libraries, like `polars` and `ibis`, are most easily interfaced with if you
 
 Use `LightOracleConnection.create_engine()` to get an engine instance pre-configured for you.
 
+```python
+conn = LightOracleConnection()
+engine = conn.create_engine()
+```
+
+### Dynamic Connection Support
+
+If you have entries in a `connections` block in your configuration file, you can change your credentials by using the `LightOracleConnection().with_profile()` method. Pass a profile name to use the credentials in that block.
+
+Here's an example configuration scheme:
+
+```yaml
+# Imagine we have the following blocks
+connections:
+  DB-development:
+    user: ???
+    dsn: ???
+    lib_dir: null
+  DB-production:
+    user: ???
+    dsn: ???
+    lib_dir: null
+```
+
+We can switch between these parameters at runtime.
+
+```python
+# We start by using the development server
+conn = LightOracleConnection(profile='DB-development')
+# At some point, we decide to switch to the production server
+# NOTE! Your connection won't change until you explicitly call `.connect()`!
+conn.with_profile(profile='DB-production').connect()
+```
+
 ### Thin mode vs. thick mode
 
 By default, lightoracle uses **thin mode** — no Oracle Instant Client required.

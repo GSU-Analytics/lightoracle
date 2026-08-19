@@ -128,3 +128,20 @@ class LightOracleConnection:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             return pd.read_sql(query, con=self.connection)
+
+    def create_engine(self):
+        from sqlalchemy import create_engine
+
+        engine = create_engine(
+            'oracle+oracledb://@',
+            connect_args={
+                'user': self.config.user,
+                'password': self.get_password(),
+                'dsn': self.config.dsn
+            },
+            thick_mode={
+                'lib_dir': self.config.lib_dir
+            }
+        )
+
+        return engine

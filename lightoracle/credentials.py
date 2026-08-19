@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from pprint import pformat
 
+load_dotenv()
+
 
 @dataclass
 class LightOracleConnection:

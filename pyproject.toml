@@ -28,6 +28,7 @@ dependencies = [
     "python-dotenv",
     "omegaconf>=2.3.0",
     "loguru>=0.7.3",
+    "sqlalchemy>=2.0.52",
 ]
 
 [project.urls]

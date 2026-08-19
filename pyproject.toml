@@ -27,6 +27,7 @@ dependencies = [
     "oracledb==2.2.1",
     "python-dotenv",
     "omegaconf>=2.3.0",
+    "loguru>=0.7.3",
 ]
 
 [project.urls]

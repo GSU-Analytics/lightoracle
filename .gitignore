@@ -228,3 +228,5 @@ config.py
 **.csv
 CLAUDE.md
 .claude/
+
+*_config.yaml

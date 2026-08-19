@@ -50,29 +50,34 @@ import warnings
 import oracledb
 import pandas as pd
 from getpass import getpass
-from omegaconf import OmegaConf
 from lightoracle import credentials
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 
 class LightOracleConnection:
-    def __init__(self, user=None, dsn=None, lib_dir=None):
-        self.config = credentials.load_config(user=user, dsn=dsn, lib_dir=lib_dir)
+    def __init__(self, user=None, dsn=None, lib_dir=None, *, profile=None):
+        # Parse arguments provided manually
+        explicit_credentials = credentials.parse_explicit_credentials(
+            arguments=locals(),
+            names=('user', 'dsn', 'lib_dir')
+        )
+        # Load the configuration from the explicitly provided credentials
+        # and from the most proximate config file. Use the details with
+        # the specified profile.
+        self.config = credentials.load_config(
+            profile=profile,
+            explicit_credentials=explicit_credentials
+        )
+        # Define the connection attribute and initialize the oracledb client.
         self.connection = None
         self.initialize_oracle_client()
 
-    def with_profile(self, profile: str, **kwargs):
-        self.config = credentials.load_config(profile=profile, **kwargs)
+    def with_profile(self, profile: str | None, explicit_credentials: dict[str, str] | None = None):
+        self.config = credentials.load_config(profile=profile, explicit_credentials=explicit_credentials)
 
     def initialize_oracle_client(self):
         # Initialize the Oracle Client with the provided library directory, if specified
         if self.config.lib_dir:
             oracledb.init_oracle_client(lib_dir=self.config.lib_dir)
-        else:
-            oracledb.init_oracle_client()
 
     def get_password(self):
         # Priority: 1. Environment variable, 2. Keyring, 3. Prompt
@@ -110,6 +115,7 @@ class LightOracleConnection:
         
         # Test the connection
         try:
+            assert self.connection, 'No initialized connection found.'
             cursor = self.connection.cursor()
             print("Connection test successful. Cursor object:", cursor)
         except Exception as e:

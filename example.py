@@ -1,6 +1,9 @@
 # example.py
 
 from lightoracle import LightOracleConnection
+from loguru import logger
+
+logger.enable('lightoracle.credentials')
 
 query = """
 SELECT
@@ -16,11 +19,22 @@ AND s.major = 'PHY'
 FETCH FIRST 20 ROWS ONLY
 """
 
+
+logger.info('Creating a LightOracle instance...')
 oracle_conn = LightOracleConnection()
-print("Connecting to Oracle database...")
+try:
+    logger.info('Checking your connection...')
+    oracle_conn.test_connection()
+    logger.success('Connection test successful!')
+except Exception as e:
+    logger.error(f'Failed to connect! {e}')
+    raise e
+
+logger.info("Connecting to Oracle database...")
 df = oracle_conn.execute_query(query)
-print("Query executed successfully.")
-print("Saving query results to CSV file...")
+logger.success("Query executed successfully.")
+
+logger.info("Saving query results to CSV file...")
 df.to_csv('example.csv', index=False)
-print("Results saved to example.csv.")
+logger.success("Results saved to example.csv.")
 

@@ -31,6 +31,7 @@ default:
   user: ???
   dsn: ???
   lib_dir: ???
+# You may provide as many entries in "connections" as you like
 connections:
   YOUR DATABASE NAME HERE:
     user: ???

@@ -71,8 +71,9 @@ class LightOracleConnection:
         self.connection = None
         self.initialize_oracle_client()
 
-    def with_profile(self, profile: str | None, explicit_credentials: dict[str, str] | None = None):
+    def with_profile(self, profile: str | None, explicit_credentials: dict[str, str] | None = None) -> 'LightOracleConnection':
         self.config = credentials.load_config(profile=profile, explicit_credentials=explicit_credentials)
+        return self
 
     def initialize_oracle_client(self):
         # Initialize the Oracle Client with the provided library directory, if specified

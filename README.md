@@ -20,55 +20,31 @@ pip install git+https://github.com/GSU-Analytics/lightoracle.git@v0.3.0
 
 `lightoracle` supports at least 5 different configuration approaches.
 
-See the [configuration guide](/docs/configuration_guide.md) for details on where to place your configuration files.
+- See the [configuration guide](/docs/configuration_guide.md) for details on where to place your configuration files.
+- See the [structure guide](/docs/configuration_structure.md) for details on the structure of the configuration file.
 
 ### Configuration File Structure
 
-A `.yaml` configuration file in any of the places listed in the [configuration guide](/docs/configuration_guide.md) will work if it has the following structure:
+A minimal configuration file looks like this.
+
+- Place it anywhere specified in the [configuration guide](/docs/configuration_guide.md).
+- Full details on the expected file structure can be found in the [structure guide](/docs/configuration_structure.md).
 
 ```yaml
 default:
-  user: ${oc.env:ORACLE_USER}
-  dsn: ${oc.env:ORACLE_DSN}
-  lib_dir: ${oc.env:ORACLE_LIB_DIR,null}
-  credential_account: ${.user}
-# You may provide as many entries in "connections" as you like.
-# You may also omit it entirely.
-connections:
-  Example Connection:
-    user: ???
-    dsn: ???
-    lib_dir: null
-    credential_account: ${.user}
-  Another Connection:
-    user: ???
-    dsn: ???
-    lib_dir: null
-    credential_account: ${.user}
-
+  user: developer
+  dsn: my-dsn:port/SID
 ```
 
-- You may specify as many database connections as you want in the `connections` section, including none. It is optional.
-- Unless you overwrite the values, the values for your default section will look like this:
 
-  ```yaml
-  default:
-    user: ${oc.env:ORACLE_USER}
-    dsn: ${oc.env:ORACLE_DSN}
-    lib_dir: ${oc.env:ORACLE_LIB_DIR,null}
-    credential_account: ${.user}
-  ```
+If you like, `lightoracle.credentials` contains a function which will create a starting configuration template for you.
 
-  This is how [OmegaConf](https://omegaconf.readthedocs.io/en/latest/) is used to parse any values provided to an `.env` file. You may override them, if you wish.
-
-- If you like, `lightoracle.credentials` contains a function which will create a starting configuration template for you.
-
-  ```python
-  from lightoracle import credentials
-  from pathlib import Path
-  # This will get you started
-  credentials.write_config_template(Path('oracle_config.yaml'))
-  ```
+```python
+from lightoracle import credentials
+from pathlib import Path
+# This will get you started
+credentials.write_config_template(Path('oracle_config.yaml'))
+```
 
 ### Password Management
 

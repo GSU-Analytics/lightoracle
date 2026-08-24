@@ -1,9 +1,0 @@
-README.md
-setup.py
-lightoracle/__init__.py
-lightoracle/oracle_connect.py
-lightoracle.egg-info/PKG-INFO
-lightoracle.egg-info/SOURCES.txt
-lightoracle.egg-info/dependency_links.txt
-lightoracle.egg-info/requires.txt
-lightoracle.egg-info/top_level.txt

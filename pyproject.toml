@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lightoracle"
-version = "0.3.0"
+version = "0.3.1"
 description = "A lightweight Oracle database connection handler."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,7 +25,10 @@ dependencies = [
     "pandas",
     "keyring",
     "oracledb==2.2.1",
-    "python-dotenv"
+    "python-dotenv",
+    "omegaconf>=2.3.0",
+    "loguru>=0.7.3",
+    "sqlalchemy>=2.0.52",
 ]
 
 [project.urls]
@@ -34,3 +37,6 @@ Repository = "https://github.com/GSU-Analytics/lightoracle.git"
 
 [tool.setuptools]
 packages = ["lightoracle"]
+
+[tool.ruff.lint]
+ignore = ['I001', 'UP045']

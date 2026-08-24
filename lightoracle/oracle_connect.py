@@ -50,57 +50,57 @@ import warnings
 import oracledb
 import pandas as pd
 from getpass import getpass
-from dotenv import load_dotenv
+from lightoracle import credentials
 
-# Load environment variables from .env file
-load_dotenv()
 
 class LightOracleConnection:
-    def __init__(self, user=None, dsn=None, lib_dir=None, thick_mode=False):
-        # Load from environment variables if not provided
-        self.user = user or os.getenv('ORACLE_USER')
-        self.dsn = dsn or os.getenv('ORACLE_DSN')
-        self.lib_dir = lib_dir or os.getenv('ORACLE_LIB_DIR')
-        self.thick_mode = thick_mode or bool(self.lib_dir)
-
-        # Validate required parameters
-        if not self.user:
-            raise ValueError(
-                "Oracle user is required. Provide it as an argument or set ORACLE_USER environment variable."
-            )
-        if not self.dsn:
-            raise ValueError(
-                "Oracle DSN is required. Provide it as an argument or set ORACLE_DSN environment variable."
-            )
-
+    def __init__(self, user=None, dsn=None, lib_dir=None, *, profile=None):
+        # Parse arguments provided manually
+        explicit_credentials = credentials.parse_explicit_credentials(
+            arguments=locals(),
+            names=('user', 'dsn', 'lib_dir')
+        )
+        # Load the configuration from the explicitly provided credentials
+        # and from the most proximate config file. Use the details with
+        # the specified profile.
+        self.config = credentials.load_config(
+            profile=profile,
+            explicit_credentials=explicit_credentials
+        )
+        # Define the connection attribute and initialize the oracledb client.
         self.connection = None
         self.initialize_oracle_client()
 
+    def with_profile(self, profile: str | None, explicit_credentials: dict[str, str] | None = None) -> 'LightOracleConnection':
+        self.config = credentials.load_config(profile=profile, explicit_credentials=explicit_credentials)
+        return self
+
     def initialize_oracle_client(self):
-        if self.thick_mode:
-            oracledb.init_oracle_client(lib_dir=self.lib_dir or None)
+        # Initialize the Oracle Client with the provided library directory, if specified
+        if self.config.lib_dir:
+            oracledb.init_oracle_client(lib_dir=self.config.lib_dir)
 
     def get_password(self):
         # Priority: 1. Environment variable, 2. Keyring, 3. Prompt
         # Check for password in environment variable first
-        password = os.getenv('ORACLE_PASSWORD')
-        if password:
-            return password
+        env_password = os.getenv('ORACLE_PASSWORD')
+        if env_password:
+            return env_password
 
         # Fall back to keyring
-        password = keyring.get_password('LightOracleConnection', self.user)
+        password = keyring.get_password('LightOracleConnection', self.config.credential_account)
         if password is None:
             # If not found, prompt the user to enter the password
-            password = getpass(prompt = f"Enter the password for {self.user}: ")
+            password = getpass(prompt = f"Enter the password for {self.config.credential_account}: ")
             # Store the password in the keyring
-            keyring.set_password('LightOracleConnection', self.user, password)
+            keyring.set_password('LightOracleConnection', self.config.credential_account, password)
         return password
 
     def reset_password(self):
         # Prompt the user to enter a new password
-        new_password = getpass(prompt = f"Enter the password for {self.user}: ")
+        new_password = getpass(prompt = f"Enter the password for {self.config.credential_account}: ")
         # Store the new password in the keyring
-        keyring.set_password('LightOracleConnection', self.user, new_password)
+        keyring.set_password('LightOracleConnection', self.config.credential_account, new_password)
         print("Password has been reset successfully.")
 
     def connect(self):
@@ -108,7 +108,7 @@ class LightOracleConnection:
         password = self.get_password()
         
         # Connect to the database
-        self.connection = oracledb.connect(user=self.user, password=password, dsn=self.dsn)
+        self.connection = oracledb.connect(user=self.config.user, password=password, dsn=self.config.dsn)
         
     def test_connection(self):
         if self.connection is None:
@@ -116,6 +116,7 @@ class LightOracleConnection:
         
         # Test the connection
         try:
+            assert self.connection, 'No initialized connection found.'
             cursor = self.connection.cursor()
             print("Connection test successful. Cursor object:", cursor)
         except Exception as e:
@@ -128,3 +129,27 @@ class LightOracleConnection:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             return pd.read_sql(query, con=self.connection)
+
+    def create_engine(self):
+        from sqlalchemy import create_engine
+        from functools import partial
+        create_SQLAlchemy_engine = create_engine
+
+        # If the library directory is supplied, we'll bind the 
+        # thick mode arguments. Otherwise, we never pass them.
+        if self.config.lib_dir:
+            create_SQLAlchemy_engine = partial(
+                create_engine,
+                thick_mode={'lib_dir': self.config.lib_dir}
+            )
+
+        engine = create_SQLAlchemy_engine(
+            'oracle+oracledb://@',
+            connect_args={
+                'user': self.config.user,
+                'password': self.get_password(),
+                'dsn': self.config.dsn
+            }
+        )
+
+        return engine

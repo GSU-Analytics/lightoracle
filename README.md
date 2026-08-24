@@ -28,15 +28,24 @@ A `.yaml` configuration file in any of the places listed in the [configuration g
 
 ```yaml
 default:
-  user: ???
-  dsn: ???
-  lib_dir: ???
-# You may provide as many entries in "connections" as you like
+  user: ${oc.env:ORACLE_USER}
+  dsn: ${oc.env:ORACLE_DSN}
+  lib_dir: ${oc.env:ORACLE_LIB_DIR,null}
+  credential_account: ${.user}
+# You may provide as many entries in "connections" as you like.
+# You may also omit it entirely.
 connections:
-  YOUR DATABASE NAME HERE:
+  Example Connection:
     user: ???
     dsn: ???
     lib_dir: null
+    credential_account: ${.user}
+  Another Connection:
+    user: ???
+    dsn: ???
+    lib_dir: null
+    credential_account: ${.user}
+
 ```
 
 - You may specify as many database connections as you want in the `connections` section, including none. It is optional.
@@ -47,6 +56,7 @@ connections:
     user: ${oc.env:ORACLE_USER}
     dsn: ${oc.env:ORACLE_DSN}
     lib_dir: ${oc.env:ORACLE_LIB_DIR,null}
+    credential_account: ${.user}
   ```
 
   This is how [OmegaConf](https://omegaconf.readthedocs.io/en/latest/) is used to parse any values provided to an `.env` file. You may override them, if you wish.
@@ -64,9 +74,13 @@ connections:
 
 Your password is loaded in priority order:
 
-1. (NOT RECOMMENDED) Get the `ORACLE_PASSWORD` passed to `.env` or set as an environment variable
-2. System keyring
-3. Interactive prompt (stored in keyring for future use)
+1. (NOT RECOMMENDED) Get the `ORACLE_PASSWORD` passed to `.env` or set as an environment variable.
+   - This is to support backwards compatibility. We do not suggest you do this!
+2. From the system keyring. The password will be selected based on the value of `credential_account`.
+   - You may provide any `credential_account` name to store your password in the keyring. 
+   - By default, your `user` name will be used.
+   - For example, if your `.yaml` file specifies `credential_account: db_admin`, the keyring password for `LightOracleConnection` associated with the name `db_admin` will be used.
+3. If no keyring value is found for the given `credential_account` value, you will be interactively prompted to provide one.
 
 To reset a stored keyring password:
 

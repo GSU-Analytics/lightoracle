@@ -88,19 +88,19 @@ class LightOracleConnection:
             return env_password
 
         # Fall back to keyring
-        password = keyring.get_password('LightOracleConnection', self.config.user)
+        password = keyring.get_password('LightOracleConnection', self.config.credential_account)
         if password is None:
             # If not found, prompt the user to enter the password
-            password = getpass(prompt = f"Enter the password for {self.config.user}: ")
+            password = getpass(prompt = f"Enter the password for {self.config.credential_account}: ")
             # Store the password in the keyring
-            keyring.set_password('LightOracleConnection', self.config.user, password)
+            keyring.set_password('LightOracleConnection', self.config.credential_account, password)
         return password
 
     def reset_password(self):
         # Prompt the user to enter a new password
-        new_password = getpass(prompt = f"Enter the password for {self.config.user}: ")
+        new_password = getpass(prompt = f"Enter the password for {self.config.credential_account}: ")
         # Store the new password in the keyring
-        keyring.set_password('LightOracleConnection', self.config.user, new_password)
+        keyring.set_password('LightOracleConnection', self.config.credential_account, new_password)
         print("Password has been reset successfully.")
 
     def connect(self):

@@ -15,6 +15,7 @@ class LightOracleConnection:
     user: str = MISSING
     dsn: str = MISSING
     lib_dir: Optional[str] = None
+    credential_account: str = '${.user}'
 
 
 @dataclass
@@ -81,7 +82,6 @@ def load_config(profile: str | None = None, explicit_credentials: dict[str, str]
         global_config = OmegaConf.merge(
             global_config,
             OmegaConf.load(config_filepath),
-
         )
     printable_config = OmegaConf.to_yaml(global_config)
     logger.info(f'Your loaded configuration details are:\n{printable_config}')

@@ -132,16 +132,23 @@ class LightOracleConnection:
 
     def create_engine(self):
         from sqlalchemy import create_engine
+        from functools import partial
+        create_SQLAlchemy_engine = create_engine
 
-        engine = create_engine(
+        # If the library directory is supplied, we'll bind the 
+        # thick mode arguments. Otherwise, we never pass them.
+        if self.config.lib_dir:
+            create_SQLAlchemy_engine = partial(
+                create_engine,
+                thick_mode={'lib_dir': self.config.lib_dir}
+            )
+
+        engine = create_SQLAlchemy_engine(
             'oracle+oracledb://@',
             connect_args={
                 'user': self.config.user,
                 'password': self.get_password(),
                 'dsn': self.config.dsn
-            },
-            thick_mode={
-                'lib_dir': self.config.lib_dir
             }
         )
 
